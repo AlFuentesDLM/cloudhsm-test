@@ -19,7 +19,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <cloudhsmVersion>3.1.2</cloudhsmVersion>
+                <cloudhsmVersion>3.4.0</cloudhsmVersion>
                 <cloudhsmJarPath>/opt/cloudhsm/java/cloudhsm-${cloudhsmVersion}.jar</cloudhsmJarPath>
             </properties>
         </profile>
@@ -99,6 +99,58 @@
                                 </transformer>
                             </transformers>
                             <finalName>login-runner</finalName>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-aesgcm-decrypt</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>target/assembly/aesgcm-decrypt-runner.jar</outputFile>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.amazonaws.cloudhsm.examples.AESGCMDecrypt</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>aesgcm-decrypt-runner</finalName>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-aesgcm-encrypt</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>target/assembly/aesgcm-encrypt-runner.jar</outputFile>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.amazonaws.cloudhsm.examples.AESGCMEncrypt</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>aesgcm-encrypt-runner</finalName>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -449,7 +501,7 @@
                             </filters>
                         </configuration>
                     </execution>
-                     <execution>
+                    <execution>
                         <id>build-ecdhops-runner</id>
                         <phase>package</phase>
                         <goals>
@@ -703,7 +755,7 @@
                             </arguments>
                         </configuration>
                     </execution>
-                     <execution>
+                    <execution>
                         <id>verify-aes-gcm-wrapping</id>
                         <phase>verify</phase>
                         <goals>
