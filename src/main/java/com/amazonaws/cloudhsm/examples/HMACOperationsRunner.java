@@ -1,5 +1,4 @@
-/*
- * Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+/*opyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -16,14 +15,20 @@
  */
 package com.amazonaws.cloudhsm.examples;
 
+
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.util.Base64;
+import java.util.Objects;
 import javax.crypto.Mac;
+
+import com.cavium.key.CaviumKey;
 
 /**
  * Demonstrate basic HMAC operation.
@@ -59,17 +64,55 @@ public class HMACOperationsRunner {
             return;
         }
 
-        String plainText = "This is a sample Plain Text Message!";
-
-        Key key = SymmetricKeys.generateExtractableAESKey(256, "HmacTest");
+        String text = null;
+        Integer handle = null;
+        String fileName = null;
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            switch (arg) {
+                case "--handle":
+                    handle = Integer.valueOf(args[++i]);
+                    System.out.println("Key handle from the hsm: " + handle);
+                    break;
+                case "--message":
+                    text = args[++i];
+                    System.out.println("Message to be encrypted: " + text);
+                    break;
+                case "--file":
+                    fileName = args[++i];
+                    System.out.println("File name: "+fileName);
+                    break;
+                case "--help":
+                    System.out.println("--handle Handle of the key stored in the hsm");
+                    System.out.println("--message");
+                    System.out.println("--file");
+                    System.out.println("--help");
+                    break;
+            }
+        }
+        if (Objects.isNull(handle)) {
+            throw new Exception("Handle is missing");
+        }
+        if (fileName != null && text == null) {
+            text = readFile(fileName);
+            System.out.println("File content: "+text);
+        }
+        CaviumKey caviumKey = KeyUtilitiesRunner.getKeyByHandle((long) handle);
+        System.out.println("Getting the following key from the HSM: " + caviumKey.getLabel());
+        Key key = (Key) caviumKey;
         String algorithm = "HmacSHA512";
-
-        byte[] caviumDigest = digest(plainText.getBytes("UTF-8"), key, algorithm, "Cavium");
+        System.out.println("Using the following algo: " + algorithm);
+        byte[] caviumDigest = digest(text.getBytes("UTF-8"), key, algorithm, "Cavium");
         System.out.println("Cavium HMAC= " + Base64.getEncoder().encodeToString(caviumDigest));
+    }
 
-        byte[] sunDigest = digest(plainText.getBytes("UTF-8"), key, algorithm, "SunJCE");
-        System.out.println("SunJCE HMAC= " + Base64.getEncoder().encodeToString(sunDigest));
-
-        assert(java.util.Arrays.equals(caviumDigest, sunDigest));
+    public static String readFile(String location) {
+        String content = "";
+        try {
+            content = new String(Files.readAllBytes(Paths.get(location)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return content;
     }
 }
