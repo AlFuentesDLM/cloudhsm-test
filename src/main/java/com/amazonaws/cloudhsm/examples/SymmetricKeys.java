@@ -87,7 +87,7 @@ public class SymmetricKeys {
     public static Key generateDESKey(String keyLabel)
             throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         boolean isExtractable = false;
-        boolean isPersistent = false;
+        boolean isPersistent = true;
 
         KeyGenerator keyGen = KeyGenerator.getInstance("DESede", "Cavium");
 

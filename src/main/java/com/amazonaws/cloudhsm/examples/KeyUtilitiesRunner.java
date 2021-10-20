@@ -28,7 +28,7 @@ import com.cavium.key.CaviumRSAPrivateKey;
 import com.cavium.key.CaviumRSAPublicKey;
 import com.cavium.key.parameter.CaviumECGenParameterSpec;
 import com.cavium.key.parameter.CaviumKeyGenAlgorithmParameterSpec;
-
+import com.cavium.key.CaviumDES3Key;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -206,11 +206,11 @@ public class KeyUtilitiesRunner {
                 }
                 case GET_ALL_KEYS: {
                     System.out.format(formatStringForKeyDetails, "KeyHandle", "Persistent",
-                                "Extractable", "Algo", "Size", "Label");
+                            "Extractable", "Algo", "Size", "Label");
                     for(Enumeration<CaviumKey> keys = Util.findAllKeys(label); keys.hasMoreElements();) {
                         CaviumKey k = keys.nextElement();
                         System.out.format(formatStringForKeyDetails, k.getHandle(), k.isPersistent(),
-                                            k.isExtractable(), k.getAlgorithm(), k.getSize(), k.getLabel());
+                                k.isExtractable(), k.getAlgorithm(), k.getSize(), k.getLabel());
                     }
                     break;
                 }
@@ -239,13 +239,16 @@ public class KeyUtilitiesRunner {
      * @param handle The key handle in the HSM.
      * @return CaviumKey object
      */
-    private static CaviumKey getKeyByHandle(long handle) throws CFM2Exception {
+    public static CaviumKey getKeyByHandle(long handle) throws CFM2Exception {
         // There is no direct method to load a key, but there is a method to load key attributes.
         // Using the key attributes and the handle, a new CaviumKey object can be created. This method shows
         // how to create a specific key type based on the attributes.
         byte[] keyAttribute = Util.getKeyAttributes(handle);
         CaviumKeyAttributes cka = new CaviumKeyAttributes(keyAttribute);
-
+        System.out.println("cka class: "+cka.getKeyClass());
+//	System.out.println("CLASS_PRIVATE_KEY: "+CaviumKeyAttributes.CLASS_PRIVATE_KEY);
+//      System.out.println("CLASS_PUBLIC_KEY: "+CaviumKeyAttributes.CLASS_PUBLIC_KEY);
+//      System.out.println("CLASS_SECRET_KEY: "+CaviumKeyAttributes.CLASS_SECRET_KEY);
         if(cka.getKeyType() == CaviumKeyAttributes.KEY_TYPE_AES) {
             CaviumAESKey aesKey = new CaviumAESKey(handle, cka);
             return aesKey;
@@ -269,8 +272,10 @@ public class KeyUtilitiesRunner {
         else if(cka.getKeyType() == CaviumKeyAttributes.KEY_TYPE_GENERIC_SECRET) {
             CaviumKey key = new CaviumAESKey(handle, cka);
             return key;
+        }else if (cka.getKeyType() == CaviumKeyAttributes.KEY_TYPE_DES3 && cka.getKeyClass() == CaviumKeyAttributes.CLASS_SECRET_KEY){
+            CaviumDES3Key key = new CaviumDES3Key(handle,cka);
+            return key;
         }
-
         return null;
     }
 

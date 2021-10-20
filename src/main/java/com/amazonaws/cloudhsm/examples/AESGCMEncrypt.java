@@ -33,6 +33,7 @@ public class AESGCMEncrypt {
         }
         Integer handle = null;
         String message = null;
+        SymmetricKeys.generateDESKey("destest");
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             switch (arg) {
